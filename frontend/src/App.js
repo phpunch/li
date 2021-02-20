@@ -47,6 +47,7 @@ function App() {
       // process the data here,
       // then pass it to state to be rendered
       console.log(data);
+      setMessages([...messages, data])
     }
     sse.onmessage = (e) => getRealtimeData(JSON.parse(e.data));
     sse.onerror = () => {
@@ -57,7 +58,7 @@ function App() {
     return () => {
       sse.close();
     };
-  }, [connect]);
+  }, []);
 
   let chatComponents = "";
   if (connect) {
