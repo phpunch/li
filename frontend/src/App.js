@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import "./App.css";
 import { TextField, Button, makeStyles } from "@material-ui/core";
 import Panel from "./components/Panel";
@@ -11,16 +10,17 @@ const useStyles = makeStyles({
   },
   bottom: {
     height: "5vh",
+    display: "flex",
+    justifyContent: "center",
+    alignContent: "center"
   },
 });
 
 function App() {
   const classes = useStyles();
   const [connect, setConnect] = useState(false);
-  const [user, setUser] = useState("Edward1613790337990");
-  const [chatServer, setChatServer] = useState(
-    "https://chat-room-be.herokuapp.com"
-  );
+  const [user, setUser] = useState("edward");
+  const [chatServer, setChatServer] = useState("http://localhost:5000");
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
 
@@ -36,11 +36,12 @@ function App() {
       user: user,
       message: message,
     });
+    setMessage("");
   };
 
   useEffect(() => {
     const sse = new EventSource(chatServer + "/message", {
-      withCredentials: true,
+      withCredentials: false,
     });
     function getRealtimeData(data) {
       // process the data here,
@@ -50,7 +51,7 @@ function App() {
     sse.onmessage = (e) => getRealtimeData(JSON.parse(e.data));
     sse.onerror = () => {
       // error log here
-
+      console.log("Any error on sse")
       sse.close();
     };
     return () => {
@@ -64,8 +65,16 @@ function App() {
       <>
         <Panel messages={messages} />
         <div className={classes.bottom}>
-          <TextField id="outlined-basic" label="Message" variant="outlined" />
-          <Button variant="contained">Send</Button>
+          <TextField
+            id="outlined-basic"
+            label="Message"
+            variant="outlined"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+          <Button variant="contained" onClick={postMessage}>
+            Send
+          </Button>
         </div>
       </>
     );
@@ -79,12 +88,14 @@ function App() {
           label="User"
           variant="outlined"
           value={user}
+          onChange={(e) => setUser(e.target.value)}
         />
         <TextField
           id="outlined-basic"
           label="Chat-server"
           variant="outlined"
           value={chatServer}
+          onChange={(e) => setChatServer(e.target.value)}
         />
         <Button variant="contained" onClick={handleConnect}>
           {connect ? "Disconnect" : "Connect"}
