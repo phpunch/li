@@ -8,9 +8,16 @@ import (
 	"net/http"
 )
 
+func setupResponse(w *http.ResponseWriter, req *http.Request) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+}
+
 var messageChan chan Message
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	setupResponse(&w, r)
 	switch r.Method {
 	case "GET":
 		handleSSE(w, r)
@@ -51,7 +58,7 @@ func handleSSE(w http.ResponseWriter, r *http.Request) {
 
 		// message will received here and printed
 		case message := <-messageChan:
-			fmt.Fprintf(w, "%+v\n", message)
+			fmt.Fprintf(w, "event: message data: %+v\n", message)
 			flusher.Flush()
 
 		// connection is closed then defer will be executed
@@ -88,7 +95,6 @@ func sendMessage(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	http.HandleFunc("/message", handler)
 
 	log.Fatal("HTTP server error: ", http.ListenAndServe("localhost:5000", nil))
